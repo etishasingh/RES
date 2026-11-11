@@ -42,8 +42,10 @@ cp .env.example .env      # macOS/Linux (use `copy .env.example .env` on Windows
 
 ### Seed & Start Server
 
+> **Demo Note:** As this is a demo repository, `backend/paypilot.db` is committed with pre-seeded projects, milestones, client star ratings/reviews, payments, and Impact/Spotlight data. `python seed.py` is idempotent and will also populate demo accounts, projects, milestones, and client reviews if you delete `backend/paypilot.db` and start from a clean database.
+
 ```bash
-# 5. Seed demo accounts (optional, idempotent)
+# 5. Seed demo accounts & workflow data (optional, idempotent)
 python seed.py
 
 # 6. Start server

@@ -1,6 +1,8 @@
-# PayPilot AI
+# PayPilot AI *(Demo)*
 
 Full-stack freelance milestone collaboration platform combining **ProofFlow ML** deliverable evaluation & recommendations, **PayPal Sandbox** milestone checkout, **PayPilot Impact** social fund allocation, and **PayPilot Spotlight** project/proposal boosting.
+
+> **Demo Notice:** As this is a demo application, a pre-seeded SQLite database (`backend/paypilot.db`) is included in the repository so sample projects, milestones, submissions, client star ratings/reviews, Sandbox payments, and Impact/Spotlight records are available immediately after cloning. `backend/seed.py` also recreates demo accounts, projects, milestones, and client reviews idempotently if the database is reset.
 
 ---
 
@@ -86,7 +88,7 @@ Open `backend/.env` and fill in your values:
 
 > **Security note:** Never commit `backend/.env` to GitHub (it is listed in `.gitignore`).
 
-### 3. Seed Demo Accounts & Start Backend
+### 3. Seed Demo Data & Start Backend
 
 ```bash
 # Inside backend/ with virtual environment activated
@@ -94,7 +96,9 @@ python seed.py
 uvicorn main:app --reload --port 8000
 ```
 
-On startup, the backend initializes SQLite (`backend/paypilot.db`), applies schema migrations, and seeds default **PayPilot Spotlight** packages and **PayPilot Impact** initiatives.
+- Because this is a **demo**, `backend/paypilot.db` comes pre-populated with sample projects, milestones, client reviews/star ratings, Sandbox transactions, Impact allocations, and Spotlight packages.
+- Running `python seed.py` is idempotent: it keeps existing records intact, and if you delete `backend/paypilot.db` to start fresh, it seeds all demo accounts (using `DEMO_PASSWORD` from `backend/.env`), demo projects, milestones, and client reviews.
+- On startup, the backend applies any SQLite schema migrations and ensures default **PayPilot Spotlight** packages and **PayPilot Impact** initiatives exist.
 
 ### 4. Start Frontend (Port `3000`)
 

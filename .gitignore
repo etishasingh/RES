@@ -12,13 +12,13 @@
 !/backend/.env.example
 
 # Build, Cache & Local Runtime State
+# Note: backend/paypilot.db is intentionally tracked as a pre-seeded demo database.
 /dist/
 tsconfig.tsbuildinfo
 **/__pycache__/
 *.py[cod]
 .pytest_cache/
 /backend/.pytest_cache/
-/backend/paypilot.db
 /paypilot-local.db
 cookies.txt
 **/cookies.txt
