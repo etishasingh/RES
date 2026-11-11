@@ -1,0 +1,50 @@
+{
+  "overall_score": 72.7,
+  "dimension_scores": {
+    "relevance": 78.9,
+    "completeness": 50.0,
+    "visual_quality": 85.0
+  },
+  "requirement_assessments": [
+    {
+      "criterion_id": "CRIT-01",
+      "description": "1. Prominently display total portfolio balance and monthly spending trend graph.",
+      "is_inferred": false,
+      "status": "partially_satisfied",
+      "evidence": "Partial keyword overlap detected: [graph].",
+      "explanation": "Deliverable partially mentions '1. Prominently display total portfolio balance and monthly spending trend graph.', but evidence is incomplete."
+    },
+    {
+      "criterion_id": "CRIT-02",
+      "description": "2. Include bottom navigation bar with icons for Home, Accounts, Insights, and Settings.",
+      "is_inferred": false,
+      "status": "partially_satisfied",
+      "evidence": "Partial keyword overlap detected: [bottom].",
+      "explanation": "Deliverable partially mentions '2. Include bottom navigation bar with icons for Home, Accounts, Insights, and Settings.', but evidence is incomplete."
+    },
+    {
+      "criterion_id": "CRIT-03",
+      "description": "3. Use high-contrast dark theme (#121212 background with vibrant accent colors).",
+      "is_inferred": false,
+      "status": "partially_satisfied",
+      "evidence": "Partial keyword overlap detected: [dark, theme].",
+      "explanation": "Deliverable partially mentions '3. Use high-contrast dark theme (#121212 background with vibrant accent colors).', but evidence is incomplete."
+    }
+  ],
+  "evidence_coverage": 1.0,
+  "missing_requirements": [
+    "1. Prominently display total portfolio balance and monthly spending trend graph.",
+    "2. Include bottom navigation bar with icons for Home, Accounts, Insights, and Settings.",
+    "3. Use high-contrast dark theme (#121212 background with vibrant accent colors)."
+  ],
+  "improvement_suggestions": [
+    "Elaborate or implement missing components for: '1. Prominently display total portfolio balance and monthly spending trend graph.'.",
+    "Elaborate or implement missing components for: '2. Include bottom navigation bar with icons for Home, Accounts, Insights, and Settings.'.",
+    "Elaborate or implement missing components for: '3. Use high-contrast dark theme (#121212 background with vibrant accent colors).'."
+  ],
+  "confidence": 0.88,
+  "evaluation_method": "supervised_ml_relevance + static_code_or_text_analysis + vlm_multimodal_adapter + criterion_level_rules",
+  "limitations": [
+    "Visual evaluation conducted via verified offline VLM adapter simulation."
+  ]
+}

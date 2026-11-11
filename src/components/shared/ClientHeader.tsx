@@ -1,0 +1,321 @@
+import React, { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { BackgroundVideo } from '../BackgroundVideo';
+import { useAuth } from '../../context/AuthContext';
+
+const VIDEO_URL =
+  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4';
+
+interface BreadcrumbItem {
+  label: string;
+  path?: string;
+}
+
+interface ClientHeaderProps {
+  title?: string;
+  subtitle?: string;
+  dateLine?: string;
+  breadcrumbs?: BreadcrumbItem[];
+  children?: React.ReactNode;
+}
+
+export const ClientHeader: React.FC<ClientHeaderProps> = ({
+  title,
+  subtitle,
+  dateLine,
+  breadcrumbs,
+  children,
+}) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { logout, user } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const pathname = location.pathname;
+
+  const isNavActive = (path: string) => {
+    if (path === '/client/dashboard') {
+      return pathname === '/client/dashboard';
+    }
+    return pathname.startsWith(path);
+  };
+
+  const handleSignOut = async () => {
+    await logout();
+    navigate('/signin', { replace: true });
+  };
+
+  const displayName = user?.organization || user?.name || 'Studio Koto';
+  const displayMonogram = displayName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  return (
+    <header className="relative w-full bg-[#003C5F] text-[#FDFBF7] overflow-hidden pt-5 pb-10 sm:pb-14 px-4 sm:px-8 border-b border-[#003C5F]/20">
+      <BackgroundVideo src={VIDEO_URL} />
+
+      <div className="relative z-10 max-w-[1280px] mx-auto w-full flex flex-col justify-between">
+        {/* Navigation Bar */}
+        <nav
+          className="w-full flex items-center justify-between pb-6 sm:pb-8 border-b border-[#FDFBF7]/15"
+          aria-label="Client Navigation"
+        >
+          {/* Logo & Portal badge */}
+          <div className="flex items-center gap-6">
+            <Link
+              to="/client/dashboard"
+              className="font-display text-2xl sm:text-3xl text-[#FDFBF7] hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-[#FDFBF7] rounded px-1 -mx-1"
+            >
+              PayPilot AI
+            </Link>
+            <span className="hidden sm:inline-block text-xs uppercase tracking-wider text-[#FDFBF7]/60 font-medium px-2.5 py-1 rounded border border-[#FDFBF7]/20">
+              Client Portal
+            </span>
+          </div>
+
+          {/* Desktop Nav Links: Dashboard, Projects, History, Payments */}
+          <div className="hidden md:flex items-center gap-6 text-[14px] font-medium">
+            <Link
+              to="/client/dashboard"
+              className={`min-h-[40px] px-3 py-1.5 transition-colors rounded focus-visible:ring-2 focus-visible:ring-[#FDFBF7] flex items-center ${
+                isNavActive('/client/dashboard')
+                  ? 'text-[#FDFBF7] font-semibold border-b-2 border-[#FDFBF7]'
+                  : 'text-[#FDFBF7]/75 hover:text-[#FDFBF7]'
+              }`}
+            >
+              Dashboard
+            </Link>
+            <Link
+              to="/client/projects"
+              className={`min-h-[40px] px-3 py-1.5 transition-colors rounded focus-visible:ring-2 focus-visible:ring-[#FDFBF7] flex items-center ${
+                pathname.startsWith('/client/projects')
+                  ? 'text-[#FDFBF7] font-semibold border-b-2 border-[#FDFBF7]'
+                  : 'text-[#FDFBF7]/75 hover:text-[#FDFBF7]'
+              }`}
+            >
+              Projects
+            </Link>
+            <Link
+              to="/client/history"
+              className={`min-h-[40px] px-3 py-1.5 transition-colors rounded focus-visible:ring-2 focus-visible:ring-[#FDFBF7] flex items-center ${
+                isNavActive('/client/history')
+                  ? 'text-[#FDFBF7] font-semibold border-b-2 border-[#FDFBF7]'
+                  : 'text-[#FDFBF7]/75 hover:text-[#FDFBF7]'
+              }`}
+            >
+              History
+            </Link>
+            <Link
+              to="/client/payments"
+              className={`min-h-[40px] px-3 py-1.5 transition-colors rounded focus-visible:ring-2 focus-visible:ring-[#FDFBF7] flex items-center ${
+                isNavActive('/client/payments')
+                  ? 'text-[#FDFBF7] font-semibold border-b-2 border-[#FDFBF7]'
+                  : 'text-[#FDFBF7]/75 hover:text-[#FDFBF7]'
+              }`}
+            >
+              Payments
+            </Link>
+            <Link
+              to="/client/impact"
+              className={`min-h-[40px] px-3 py-1.5 transition-colors rounded focus-visible:ring-2 focus-visible:ring-[#FDFBF7] flex items-center ${
+                pathname.includes('/impact')
+                  ? 'text-[#FDFBF7] font-semibold border-b-2 border-[#FDFBF7]'
+                  : 'text-[#FDFBF7]/75 hover:text-[#FDFBF7]'
+              }`}
+            >
+              Impact
+            </Link>
+            <Link
+              to="/client/profile"
+              className={`min-h-[40px] px-3 py-1.5 transition-colors rounded focus-visible:ring-2 focus-visible:ring-[#FDFBF7] flex items-center ${
+                isNavActive('/client/profile')
+                  ? 'text-[#FDFBF7] font-semibold border-b-2 border-[#FDFBF7]'
+                  : 'text-[#FDFBF7]/75 hover:text-[#FDFBF7]'
+              }`}
+            >
+              Profile
+            </Link>
+          </div>
+
+          {/* User Monogram & Sign out */}
+          <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-center gap-3 pl-3 border-l border-[#FDFBF7]/20">
+              <div
+                className="w-9 h-9 rounded-full bg-[#FDFBF7]/15 border border-[#FDFBF7]/30 flex items-center justify-center text-xs font-semibold tracking-wider text-[#FDFBF7]"
+                aria-label={`User avatar for ${displayName}`}
+              >
+                {displayMonogram}
+              </div>
+              <div className="text-left text-xs">
+                <p className="font-medium text-[#FDFBF7] leading-none mb-1">{displayName}</p>
+                <p className="text-[#FDFBF7]/70 leading-none">Client Team</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="min-h-[40px] text-xs text-[#FDFBF7]/75 hover:text-[#FDFBF7] px-2.5 py-1.5 rounded transition-colors focus-visible:ring-2 focus-visible:ring-[#FDFBF7] cursor-pointer"
+            >
+              Sign out
+            </button>
+          </div>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden min-h-[40px] min-w-[40px] px-3 py-2 rounded-lg border border-[#FDFBF7]/25 text-xs text-[#FDFBF7] font-medium tracking-wide uppercase focus-visible:ring-2 focus-visible:ring-[#FDFBF7]"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="client-mobile-nav-panel"
+          >
+            {mobileMenuOpen ? 'Close' : 'Menu'}
+          </button>
+        </nav>
+
+        {/* Mobile Nav Drawer */}
+        {mobileMenuOpen && (
+          <div
+            id="client-mobile-nav-panel"
+            className="md:hidden mt-4 p-4 rounded-xl bg-[#002D47] border border-[#FDFBF7]/20 flex flex-col gap-2 text-sm text-[#FDFBF7] animate-fade-rise"
+          >
+            <div className="flex items-center gap-3 pb-3 border-b border-[#FDFBF7]/15">
+              <div className="w-8 h-8 rounded-full bg-[#FDFBF7]/20 flex items-center justify-center font-semibold text-xs">
+                {displayMonogram}
+              </div>
+              <div>
+                <p className="font-medium text-[#FDFBF7]">{displayName}</p>
+                <p className="text-xs text-[#FDFBF7]/70">Client Account</p>
+              </div>
+            </div>
+            <Link
+              to="/client/dashboard"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`min-h-[40px] text-left px-2 py-2 rounded flex items-center ${
+                isNavActive('/client/dashboard')
+                  ? 'bg-[#FDFBF7]/15 font-semibold'
+                  : 'text-[#FDFBF7]/80'
+              }`}
+            >
+              Dashboard
+            </Link>
+            <Link
+              to="/client/profile"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`min-h-[40px] text-left px-2 py-2 rounded flex items-center ${
+                isNavActive('/client/profile')
+                  ? 'bg-[#FDFBF7]/15 font-semibold'
+                  : 'text-[#FDFBF7]/80'
+              }`}
+            >
+              Organization profile
+            </Link>
+            <Link
+              to="/client/projects"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`min-h-[40px] text-left px-2 py-2 rounded flex items-center ${
+                pathname.startsWith('/client/projects')
+                  ? 'bg-[#FDFBF7]/15 font-semibold'
+                  : 'text-[#FDFBF7]/80'
+              }`}
+            >
+              Projects
+            </Link>
+            <Link
+              to="/client/history"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`min-h-[40px] text-left px-2 py-2 rounded flex items-center ${
+                isNavActive('/client/history')
+                  ? 'bg-[#FDFBF7]/15 font-semibold'
+                  : 'text-[#FDFBF7]/80'
+              }`}
+            >
+              History
+            </Link>
+            <Link
+              to="/client/payments"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`min-h-[40px] text-left px-2 py-2 rounded flex items-center ${
+                isNavActive('/client/payments')
+                  ? 'bg-[#FDFBF7]/15 font-semibold'
+                  : 'text-[#FDFBF7]/80'
+              }`}
+            >
+              Payments
+            </Link>
+            <Link
+              to="/client/impact"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`min-h-[40px] text-left px-2 py-2 rounded flex items-center ${
+                pathname.includes('/impact')
+                  ? 'bg-[#FDFBF7]/15 font-semibold'
+                  : 'text-[#FDFBF7]/80'
+              }`}
+            >
+              Impact
+            </Link>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="min-h-[40px] text-left px-2 py-2 text-xs text-[#FDFBF7]/70 border-t border-[#FDFBF7]/15 mt-1 cursor-pointer"
+            >
+              Sign out
+            </button>
+          </div>
+        )}
+
+        {/* Breadcrumbs */}
+        {breadcrumbs && breadcrumbs.length > 0 && (
+          <nav aria-label="Breadcrumb" className="pt-4 sm:pt-6">
+            <ol className="flex items-center flex-wrap gap-2 text-[13px] text-[#FDFBF7]/70">
+              {breadcrumbs.map((crumb, idx) => {
+                const isLast = idx === breadcrumbs.length - 1;
+                return (
+                  <li key={idx} className="flex items-center gap-2">
+                    {idx > 0 && <span className="text-[#FDFBF7]/40">/</span>}
+                    {crumb.path && !isLast ? (
+                      <Link
+                        to={crumb.path}
+                        className="hover:text-[#FDFBF7] underline underline-offset-2 transition-colors"
+                      >
+                        {crumb.label}
+                      </Link>
+                    ) : (
+                      <span className={isLast ? 'text-[#FDFBF7] font-medium' : ''}>
+                        {crumb.label}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
+        )}
+
+        {/* Headline / context area if provided */}
+        {(title || subtitle || dateLine || children) && (
+          <div className="pt-6 sm:pt-10">
+            {dateLine && (
+              <p className="text-[13px] uppercase tracking-widest text-[#FDFBF7]/70 font-medium mb-2.5">
+                {dateLine}
+              </p>
+            )}
+            {title && (
+              <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-[#FDFBF7] tracking-tight leading-[1.05] mb-2.5">
+                {title}
+              </h1>
+            )}
+            {subtitle && (
+              <p className="text-[15px] sm:text-base text-[#FDFBF7]/85 max-w-[65ch] leading-relaxed mb-4">
+                {subtitle}
+              </p>
+            )}
+            {children}
+          </div>
+        )}
+      </div>
+    </header>
+  );
+};

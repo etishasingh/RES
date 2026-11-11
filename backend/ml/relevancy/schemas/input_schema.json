@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ProofFlowInferenceInput",
+  "description": "Input schema for ProofFlow freelance deliverable evaluation",
+  "type": "object",
+  "required": ["client_request"],
+  "properties": {
+    "client_request": {
+      "type": "string",
+      "description": "Original client request, prompt, or project brief",
+      "minLength": 1
+    },
+    "acceptance_criteria": {
+      "description": "Testable acceptance criteria as a list of strings or bulleted text",
+      "oneOf": [
+        {"type": "string"},
+        {"type": "array", "items": {"type": "string"}}
+      ]
+    },
+    "deliverable_text": {
+      "type": ["string", "null"],
+      "description": "Actual deliverable text, code snippet, article, or summary"
+    },
+    "deliverable_path": {
+      "type": ["string", "null"],
+      "description": "Optional local file path to deliverable content"
+    },
+    "image_path": {
+      "type": ["string", "null"],
+      "description": "Optional local path or URL to visual deliverable screenshot/design"
+    },
+    "work_category": {
+      "type": ["string", "null"],
+      "description": "Domain work category (e.g., Websites and software development, Writing and content creation, UI/UX and graphic design)",
+      "enum": [
+        "Websites and software development",
+        "Writing and content creation",
+        "Documents and presentations",
+        "UI/UX and graphic design",
+        "Data analysis and data science",
+        "General digital freelance work",
+        null
+      ]
+    },
+    "validation_evidence": {
+      "type": ["string", "object", "null"],
+      "description": "Objective test output, execution logs, assertion results, or benchmark metrics"
+    }
+  },
+  "additionalProperties": false
+}

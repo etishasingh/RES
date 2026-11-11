@@ -1,0 +1,12 @@
+{
+  "client_request": "Design a responsive mobile dashboard landing screen for a personal finance tracker application with dark mode styling.",
+  "acceptance_criteria": [
+    "1. Prominently display total portfolio balance and monthly spending trend graph.",
+    "2. Include bottom navigation bar with icons for Home, Accounts, Insights, and Settings.",
+    "3. Use high-contrast dark theme (#121212 background with vibrant accent colors)."
+  ],
+  "deliverable_text": "Mobile UI design mockup export with dark theme typography and bottom nav component hierarchy.",
+  "image_path": "mock_dashboard_dark.png",
+  "work_category": "UI/UX and graphic design",
+  "validation_evidence": null
+}

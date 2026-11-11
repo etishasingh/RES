@@ -1,0 +1,41 @@
+{
+  "model_name": "ProofFlow-Relevance-Ridge",
+  "version": "1.0.0",
+  "algorithm": "Ridge Regression",
+  "hyperparameters": {
+    "alpha": 10.0,
+    "random_state": 42
+  },
+  "feature_names": [
+    "sim_req_del",
+    "sim_crit_del",
+    "req_char_count",
+    "del_char_count",
+    "req_word_count",
+    "del_word_count",
+    "ratio_words",
+    "criteria_count",
+    "is_code"
+  ],
+  "target_column": "relevance_score",
+  "target_scale": "0-100",
+  "training_sample_count": 550,
+  "training_sources": [
+    "SummEval",
+    "HelpSteer2"
+  ],
+  "group_split_column": "data_split_group",
+  "group_count": 225,
+  "metrics_training": {
+    "mae": 18.62,
+    "rmse": 23.95,
+    "r2": 0.102,
+    "spearman": 0.342
+  },
+  "metrics_group_cv_5fold": {
+    "mae": 19.03,
+    "rmse": 24.55,
+    "r2": 0.046,
+    "spearman": 0.323
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "package_name": "ProofFlow_Multimodal_Model",
+  "version": "1.0.0",
+  "description": "Production-oriented hybrid multimodal relevance evaluation system for freelance deliverables",
+  "release_date": "2026-10-15",
+  "author": "ProofFlow AI Research & MLOps Team",
+  "architecture": {
+    "component_a": "Requirement and Constraint Understanding (Structured Criteria Parser)",
+    "component_b": "Text Relevance and Semantic Matching (Ridge Regression on TF-IDF + Length Ratios)",
+    "component_c": "Functional & Technical Evaluator (Objective Test Verification + AST Code Syntax Analyzer)",
+    "component_d": "Visual and Multimodal Evaluator (Modular VLM Adapter for Image/UI deliverables)",
+    "component_e": "Evidence-Aware Dynamic Score Aggregator (Renormalized Category Rubrics)"
+  },
+  "training_provenance": {
+    "supervised_target": "relevance_score",
+    "eligible_sources": ["SummEval", "HelpSteer2"],
+    "training_sample_count": 550,
+    "group_split_strategy": "GroupKFold on data_split_group (225 unique document/prompt groups)",
+    "target_scale": "0.0 - 100.0",
+    "target_summary": {
+      "mean": 69.06,
+      "std": 25.32,
+      "min": 0.0,
+      "max": 100.0
+    }
+  },
+  "evaluation_metrics": {
+    "validation_5fold_group_cv": {
+      "mae": 19.03,
+      "rmse": 24.55,
+      "r2": 0.046,
+      "spearman_rank_correlation": 0.323,
+      "dummy_baseline_mae": 20.07,
+      "dummy_baseline_rmse": 25.27
+    },
+    "training_fit": {
+      "mae": 18.62,
+      "rmse": 23.95,
+      "r2": 0.102,
+      "spearman": 0.342
+    }
+  },
+  "operational_capabilities": {
+    "offline_executable": true,
+    "arbitrary_code_execution": false,
+    "external_api_required_for_baseline": false,
+    "hardware_requirements": "Commodity CPU (1 vCPU, 512MB RAM)",
+    "supported_categories": [
+      "Websites and software development",
+      "Writing and content creation",
+      "Documents and presentations",
+      "UI/UX and graphic design",
+      "Data analysis and data science",
+      "General digital freelance work"
+    ]
+  }
+}

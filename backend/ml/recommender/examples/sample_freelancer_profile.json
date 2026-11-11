@@ -1,0 +1,27 @@
+{
+  "skills": [
+    "Python",
+    "SQL",
+    "Pandas"
+  ],
+  "skill_proficiency": {
+    "Python": "Advanced",
+    "SQL": "Intermediate",
+    "Pandas": "Intermediate"
+  },
+  "experience_level": "intermediate",
+  "experience_years": 3.0,
+  "primary_role": "Data Analyst",
+  "desired_role": "Data Analyst",
+  "career_goals": [
+    "Work with international clients",
+    "Transition to Machine Learning"
+  ],
+  "preferred_work_type": [
+    "Part-time remote",
+    "Fixed-price projects"
+  ],
+  "remote_preference": "Remote-first",
+  "budget": 5000.0,
+  "available_hours_per_week": 10.0
+}

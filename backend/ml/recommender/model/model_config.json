@@ -1,0 +1,31 @@
+{
+  "model_name": "ProofFlowRecommender",
+  "version": "1.0.0",
+  "anchor_date": "2026-10-14",
+  "weights": {
+    "skill_match": 0.4,
+    "text_similarity": 0.25,
+    "experience": 0.15,
+    "work_remote": 0.1,
+    "career_goal": 0.1
+  },
+  "proficiency_weights": {
+    "basic": 0.6,
+    "beginner": 0.6,
+    "intermediate": 0.85,
+    "advanced": 1.0,
+    "expert": 1.0
+  },
+  "experience_mapping": {
+    "beginner": 1,
+    "junior": 2,
+    "intermediate": 3,
+    "senior": 4,
+    "expert": 5
+  },
+  "catalog_stats": {
+    "opportunities_count": 213,
+    "courses_count": 49,
+    "canonical_skills_count": 141
+  }
+}

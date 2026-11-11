@@ -1,0 +1,11 @@
+{
+  "client_request": "Draft a concise executive briefing document summarizing the Q3 cloud infrastructure cost optimization strategy.",
+  "acceptance_criteria": [
+    "1. Highlight top three cost drivers (compute, storage, data egress).",
+    "2. Outline immediate actionable optimization tactics including reserved instances.",
+    "3. Maintain professional tone under 400 words with bulleted recommendations."
+  ],
+  "deliverable_text": "Executive Briefing: Q3 Cloud Infrastructure Cost Optimization\n\nExecutive Summary:\nDuring Q3, enterprise cloud spending increased by 14% quarter-over-quarter. To restore budget efficiency while sustaining 99.99% service availability, this briefing outlines our key spending drivers and tactical optimization roadmap.\n\nPrimary Cost Drivers:\n1. Compute Resources: Over-provisioned idle Kubernetes nodes during non-peak hours.\n2. Unattached Storage Volumes: Retained obsolete EBS snapshots and test volume clusters.\n3. Cross-Region Data Egress: Uncached API traffic between US-East and EU-West regions.\n\nImmediate Actionable Roadmap:\n- Reserved Instances & Savings Plans: Commit 1-year convertible plans for baseline database workloads to realize 32% direct savings.\n- Automated Idle Shutdown: Enforce auto-scaling policies to spin down development clusters outside working hours.\n- Storage Lifecycle Policies: Transition snapshots older than 90 days to Glacier cold storage.\n",
+  "work_category": "Writing and content creation",
+  "validation_evidence": null
+}

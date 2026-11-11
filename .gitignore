@@ -1,0 +1,37 @@
+# Dependencies & Virtual Environments
+node_modules/
+backend/venv/
+backend/.venv/
+
+# Build, Cache & Local Runtime State
+dist/
+tsconfig.tsbuildinfo
+**/__pycache__/
+backend/.pytest_cache/
+backend/.env
+backend/paypilot.db
+paypilot-local.db
+cookies.txt
+backend/cookies.txt
+.DS_Store
+*.log
+
+# Non-runtime tooling, backups & scratch leftovers
+.agent/
+.agents/
+.gemini/
+.gsd/
+adapters/
+backups/
+data/
+design-system/
+docs/
+models/
+scripts/
+PROJECT_RULES.md
+VERSION
+model_capabilities.yaml
+ClientProjectsPage.tsx
+ErrorBoundary.tsx
+gitignore-current
+PayPilot AI – Sign up and sign in.html

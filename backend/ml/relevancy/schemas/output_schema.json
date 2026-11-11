@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ProofFlowInferenceOutput",
+  "description": "Structured output schema for ProofFlow freelance deliverable evaluation",
+  "type": "object",
+  "required": [
+    "overall_score",
+    "dimension_scores",
+    "requirement_assessments",
+    "evidence_coverage",
+    "missing_requirements",
+    "improvement_suggestions",
+    "confidence",
+    "evaluation_method",
+    "limitations"
+  ],
+  "properties": {
+    "overall_score": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Evidence-grounded aggregate evaluation score on a 0-100 scale, or null if evidence is insufficient"
+    },
+    "dimension_scores": {
+      "type": "object",
+      "description": "Component scores for actively evaluated dimensions only",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 100
+      }
+    },
+    "requirement_assessments": {
+      "type": "array",
+      "description": "Per-criterion assessment details",
+      "items": {
+        "type": "object",
+        "required": ["criterion_id", "description", "status", "evidence", "explanation"],
+        "properties": {
+          "criterion_id": {"type": "string"},
+          "description": {"type": "string"},
+          "is_inferred": {"type": "boolean"},
+          "status": {
+            "type": "string",
+            "enum": ["satisfied", "partially_satisfied", "not_satisfied", "unverified"]
+          },
+          "evidence": {"type": "string"},
+          "explanation": {"type": "string"}
+        }
+      }
+    },
+    "evidence_coverage": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Measurable proportion of criteria and rubric dimensions supported by actual evidence"
+    },
+    "missing_requirements": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "List of explicit or inferred requirements not demonstrated or known to be unmet"
+    },
+    "improvement_suggestions": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Actionable recommendations for improving deliverable satisfaction"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Calibrated uncertainty/confidence metric based on evidence availability"
+    },
+    "evaluation_method": {
+      "type": "string",
+      "description": "Combination of models, rules, validation evidence, and adapters employed"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Explicit constraints, omitted dimensions, or missing inputs identified during evaluation"
+    }
+  },
+  "additionalProperties": false
+}
