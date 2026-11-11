@@ -56,8 +56,8 @@ Full-stack freelance milestone collaboration platform combining **ProofFlow ML**
 ### 1. Clone & Configure Backend (Port `8000`)
 
 ```bash
-git clone https://github.com/rehan2608/RELS.git
-cd RELS/backend
+git clone https://github.com/rehan2608/RES.git
+cd RES/backend
 
 python3 -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
