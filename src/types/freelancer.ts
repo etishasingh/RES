@@ -92,9 +92,13 @@ export interface JourneyEntry {
   projectId: string;
   client: string;
   projectTitle: string;
+  milestoneTitle?: string;
   startDate: string;
   completedDate: string;
   amount: number;
+  milestoneAmount?: number;
+  isPaid?: boolean;
+  status?: string;
   rating: number;
   feedback: string;
 }

@@ -8,6 +8,7 @@ import type {
   EvaluationResult,
 } from '../types/freelancer';
 import { projectService, type ApiProject, type ApiSubmission } from './projectService';
+import { apiFetch } from '../lib/api';
 
 export function mapApiProjectToFreelancerProject(
   p: ApiProject,
@@ -83,10 +84,8 @@ export const freelancerService = {
     milestone_id?: string;
     project_id?: string;
   }): Promise<EvaluationResult> {
-    const response = await fetch('/api/evaluate', {
+    const response = await apiFetch('/api/evaluate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify(payload),
     });
     if (!response.ok) {
@@ -125,10 +124,8 @@ export const freelancerService = {
   },
 
   async getLearningData(): Promise<LearningRoadmapData> {
-    const response = await fetch('/api/recommend', {
+    const response = await apiFetch('/api/recommend', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ top_k: 5 }),
     });
     if (!response.ok) {

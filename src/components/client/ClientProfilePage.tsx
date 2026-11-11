@@ -3,6 +3,7 @@ import { ClientHeader } from '../shared/ClientHeader';
 import { Toast } from '../shared/Toast';
 import { useAuth } from '../../context/AuthContext';
 import { useDemoStore } from '../../state/demoStore';
+import { apiFetch } from '../../lib/api';
 
 interface ClientProfileForm {
   organization: string;
@@ -47,7 +48,7 @@ export const ClientProfilePage: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch('/api/profile/me', { credentials: 'include' })
+    apiFetch('/api/profile/me')
       .then(async (response) => {
         if (!response.ok) throw new Error('Unable to load your organization profile.');
         return response.json() as Promise<ClientProfileForm>;
@@ -77,10 +78,8 @@ export const ClientProfilePage: React.FC = () => {
     setSaving(true);
     setLoadError('');
     try {
-      const response = await fetch('/api/profile/me', {
+      const response = await apiFetch('/api/profile/me', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(profile),
       });
       const data = await response.json().catch(() => null);

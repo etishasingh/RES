@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ClientHeader } from '../shared/ClientHeader';
 import { useReveal } from '../../hooks/useReveal';
 import { useCountUp } from '../../hooks/useCountUp';
-import { paymentService } from '../../services/paymentService';
+import { paymentApi } from '../../services/paymentApi';
 import type { PaymentTransaction } from '../../types/client';
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   paid_sandbox: {
     label: 'Paid (Sandbox)',
     className: 'bg-[#EAF5EF] text-[#24543A] border-[#B2DAC3]',
   },
   pending_approval: {
-    label: 'Pending Approval',
+    label: 'Pending Settlement',
     className: 'bg-[#FAF3E7] text-[#874E0E] border-[#E8D2AC]',
   },
   scheduled: {
@@ -29,16 +29,48 @@ export const ClientPaymentsPage: React.FC = () => {
 
   useEffect(() => {
     document.title = 'PayPilot AI — Payments';
+  }, []);
+
+  const loadPayments = useCallback(() => {
     setIsLoading(true);
     setLoadError('');
-    paymentService
-      .listMyPayments()
-      .then(setClientPayments)
-      .catch((err) => {
-        setLoadError(err instanceof Error ? err.message : 'Unable to load payment transactions.');
+    paymentApi
+      .listPayments()
+      .then((res) => {
+        const rawList = res.payments || res.items || [];
+        const mapped: PaymentTransaction[] = rawList.map((item) => {
+          const statusKey =
+            item.status === 'COMPLETED'
+              ? 'paid_sandbox'
+              : item.status === 'CREATED' || item.status === 'APPROVED'
+              ? 'pending_approval'
+              : 'scheduled';
+
+          return {
+            id: item.id,
+            projectId: item.project_id,
+            projectTitle: item.project_title || 'Project',
+            milestoneTitle: item.milestone_title || 'Milestone Deliverable',
+            milestoneNumber: item.milestone_number || 1,
+            amount: Number(item.amount ?? (item.amount_cents / 100)),
+            date: (item.captured_at || item.created_at || '').slice(0, 10),
+            status: statusKey as 'paid_sandbox' | 'pending_approval' | 'scheduled',
+            sandboxReference: item.sandbox_reference || item.id,
+          };
+        });
+        setClientPayments(mapped);
       })
-      .finally(() => setIsLoading(false));
+      .catch((err) => {
+        setLoadError(err instanceof Error ? err.message : 'Unable to load payment ledger.');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
+
+  useEffect(() => {
+    loadPayments();
+  }, [loadPayments]);
 
   const totalPaidSandbox = clientPayments
     .filter((t) => t.status === 'paid_sandbox')
@@ -95,8 +127,21 @@ export const ClientPaymentsPage: React.FC = () => {
             </div>
           </div>
 
+          {loadError && (
+            <div role="alert" className="p-4 rounded-xl bg-[#FAF3E7] border border-[#E8D2AC] flex items-center justify-between">
+              <span className="text-sm text-[#874E0E]">{loadError}</span>
+              <button
+                type="button"
+                onClick={loadPayments}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#874E0E] text-white hover:bg-[#6D3F0B]"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
           {/* Summary Cards */}
-          {clientPayments.length > 0 && (
+          {!isLoading && clientPayments.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-paper border border-[#003C5F]/15 rounded-xl p-6">
                 <div className="text-[13px] text-[#455A6A] mb-1">Total Paid (Sandbox)</div>
@@ -114,7 +159,7 @@ export const ClientPaymentsPage: React.FC = () => {
                   ${countRemaining.toLocaleString()}
                 </div>
                 <div className="text-[13px] text-[#455A6A] mt-1.5">
-                  Pending milestone approvals
+                  Pending milestone settlement
                 </div>
               </div>
 
@@ -128,17 +173,11 @@ export const ClientPaymentsPage: React.FC = () => {
             </div>
           )}
 
-          {/* Transactions Table or Loading / Empty State */}
-          {loadError && (
-            <div role="alert" className="p-4 rounded-xl bg-[#FDF2F2] border border-[#F5C2C2] text-sm text-[#991B1B]">
-              {loadError}
-            </div>
-          )}
-
+          {/* Transactions Table or Empty State */}
           {isLoading ? (
-            <div className="bg-paper border border-[#003C5F]/15 rounded-xl p-12 text-center space-y-3">
-              <div className="animate-spin h-7 w-7 border-4 border-[#003C5F] border-t-transparent rounded-full mx-auto" />
-              <p className="text-sm text-[#455A6A]">Loading PayPal Sandbox transactions…</p>
+            <div className="py-16 text-center space-y-3">
+              <div className="w-8 h-8 border-2 border-[#003C5F] border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-sm text-[#455A6A]">Loading payment ledger...</p>
             </div>
           ) : clientPayments.length === 0 ? (
             <div className="bg-paper border border-[#003C5F]/15 rounded-xl p-16 text-center space-y-4">
@@ -169,7 +208,6 @@ export const ClientPaymentsPage: React.FC = () => {
                 </Link>
               </div>
 
-              {/* Sandbox context even in empty state */}
               <div className="mt-6 pt-6 border-t border-[#003C5F]/10 text-[13px] text-[#455A6A]">
                 <span className="font-semibold text-[#874E0E]">Reminder:</span> PayPal Sandbox is a
                 test environment. All payment flows here are simulated and no real funds are
@@ -204,7 +242,7 @@ export const ClientPaymentsPage: React.FC = () => {
                   </thead>
                   <tbody>
                     {clientPayments.map((tx, idx) => {
-                      const statusCfg = STATUS_CONFIG[tx.status];
+                      const statusCfg = STATUS_CONFIG[tx.status] || STATUS_CONFIG.scheduled;
                       return (
                         <tr
                           key={tx.id}
@@ -244,21 +282,11 @@ export const ClientPaymentsPage: React.FC = () => {
                             </code>
                           </td>
                           <td className="px-4 py-4">
-                            <div className="flex items-center gap-2.5">
-                              <span
-                                className={`inline-flex px-2.5 py-0.5 rounded text-[13px] font-semibold border ${statusCfg.className}`}
-                              >
-                                {statusCfg.label}
-                              </span>
-                              {tx.status === 'pending_approval' && (
-                                <Link
-                                  to={`/client/projects/${tx.projectId}`}
-                                  className="text-xs font-semibold text-[#003C5F] hover:underline underline-offset-2 whitespace-nowrap"
-                                >
-                                  Pay via PayPal &rarr;
-                                </Link>
-                              )}
-                            </div>
+                            <span
+                              className={`inline-flex px-2.5 py-0.5 rounded text-[13px] font-semibold border ${statusCfg.className}`}
+                            >
+                              {statusCfg.label}
+                            </span>
                           </td>
                         </tr>
                       );

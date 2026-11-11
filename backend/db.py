@@ -30,16 +30,27 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, Session, relationship, sessionmaker
 
-DATABASE_URL = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'paypilot.db')}"
+raw_db_url = os.environ.get("DATABASE_URL")
+if raw_db_url:
+    if raw_db_url.startswith("postgres://"):
+        raw_db_url = raw_db_url.replace("postgres://", "postgresql://", 1)
+    DATABASE_URL = raw_db_url
+else:
+    db_path = os.environ.get("SQLITE_DB_PATH", os.path.join(os.path.dirname(__file__), "paypilot.db"))
+    DATABASE_URL = f"sqlite:///{db_path}"
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+is_sqlite = DATABASE_URL.startswith("sqlite")
+connect_args = {"check_same_thread": False} if is_sqlite else {}
+
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
 
-@event.listens_for(engine, "connect")
-def _enable_sqlite_foreign_keys(dbapi_connection, _connection_record) -> None:
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
+if is_sqlite:
+    @event.listens_for(engine, "connect")
+    def _enable_sqlite_foreign_keys(dbapi_connection, _connection_record) -> None:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
 
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)

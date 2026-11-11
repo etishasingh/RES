@@ -8,6 +8,7 @@ import type {
   ProfileServiceContract,
   ProfileUpdatePayload,
 } from '../types/profile';
+import { apiFetch } from '../lib/api';
 
 const emptyProfile = (data: Partial<FreelancerProfile> = {}): FreelancerProfile => ({
   id: '', name: '', email: '', headline: '', skills: [], skill_proficiency: {},
@@ -28,7 +29,7 @@ export class ProfileService implements ProfileServiceContract {
 
   async getProfile(): Promise<FreelancerProfile> {
     try {
-      const res = await fetch(`${this.baseUrl}/me`, { credentials: 'include' });
+      const res = await apiFetch(`${this.baseUrl}/me`);
       if (res.ok) {
         const data = await res.json();
         const p = data.profile || {};
@@ -43,11 +44,9 @@ export class ProfileService implements ProfileServiceContract {
 
   async updateProfile(payload: ProfileUpdatePayload): Promise<ProfileResponse> {
     try {
-      const res = await fetch(`${this.baseUrl}/me`, {
+      const res = await apiFetch(`${this.baseUrl}/me`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        credentials: 'include',
       });
       if (res.ok) {
         const data = await res.json();
@@ -87,11 +86,9 @@ export class ProfileService implements ProfileServiceContract {
       onboardingCompleted: true,
     };
     try {
-      const res = await fetch(`${this.baseUrl}/me`, {
+      const res = await apiFetch(`${this.baseUrl}/me`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        credentials: 'include',
       });
       if (res.ok) {
         return { profile: finalized, message: 'Onboarding complete.', source: 'api' };

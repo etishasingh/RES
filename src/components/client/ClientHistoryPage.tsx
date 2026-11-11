@@ -1,46 +1,81 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ClientHeader } from '../shared/ClientHeader';
-import { paidAmountForReview, projectService } from '../../services/projectService';
+import { projectService } from '../../services/projectService';
 import { useReveal } from '../../hooks/useReveal';
+import type { ClientHistoryItem } from '../../types/client';
 
 const STAR_ICONS = (rating: number) => {
   const full = Math.floor(rating);
   const half = rating - full >= 0.5;
-  return { full, half, empty: 5 - full - (half ? 1 : 0) };
+  return { full, half, empty: Math.max(0, 5 - full - (half ? 1 : 0)) };
+};
+
+const getInitials = (name: string): string => {
+  if (!name) return 'FL';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase() || 'FL';
 };
 
 export const ClientHistoryPage: React.FC = () => {
-  const [clientHistory, setClientHistory] = useState<any[]>([]);
-  useEffect(() => {
-    projectService.journey().then(({ projects, reviews }) => {
-      const byProject = new Map(projects.map((project) => [project.id, project]));
-      const countedMilestones = new Set<string>();
-      setClientHistory(
-        reviews.map((review) => {
+  const [clientHistory, setClientHistory] = useState<ClientHistoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const { ref: pageRef } = useReveal<HTMLDivElement>();
+
+  const loadHistory = () => {
+    setIsLoading(true);
+    setLoadError('');
+    projectService
+      .journey()
+      .then(({ projects, reviews }) => {
+        const byProject = new Map(projects.map((project) => [project.id, project]));
+        const items: ClientHistoryItem[] = reviews.map((review) => {
           const project = byProject.get(review.project_id);
+          const freelancerName =
+            review.freelancer_name || project?.freelancer_name || 'Specialist Talent';
+          const freelancerAvatar = getInitials(freelancerName);
+          const startDate = project?.created_at?.slice(0, 10) || review.created_at.slice(0, 10);
+          const completedDate = review.created_at.slice(0, 10);
+          const confirmedPaid = Number(review.paid_amount ?? 0);
+          const milestoneAmount = Number(review.milestone_amount ?? 0);
+
           return {
             id: review.id,
             projectId: review.project_id,
-            title: project?.title || 'Project',
-            freelancerName: 'Freelancer',
-            freelancerAvatar: 'FR',
-            startDate: project?.created_at?.slice(0, 10) || '',
-            completedDate: review.created_at.slice(0, 10),
-            totalPaid: paidAmountForReview(project, review, countedMilestones),
+            title: project?.title || review.milestone_title || 'Project Engagement',
+            milestoneTitle: review.milestone_title || undefined,
+            freelancerName,
+            freelancerAvatar,
+            startDate,
+            completedDate,
+            totalPaid: confirmedPaid,
+            milestoneAmount,
+            isPaid: Boolean(review.is_paid),
+            status: review.milestone_status || 'completed',
             ratingGiven: (review.final_score ?? review.client_score ?? 0) / 20,
-            feedbackSummary: review.feedback || '',
+            feedbackSummary: review.feedback || 'Milestone deliverable reviewed and accepted.',
           };
-        })
-      );
-    });
-  }, []);
-  const { ref: pageRef } = useReveal<HTMLDivElement>();
+        });
+        setClientHistory(items);
+      })
+      .catch((error) => {
+        setLoadError(error instanceof Error ? error.message : 'Unable to load project history.');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
 
   useEffect(() => {
     document.title = 'PayPilot AI — Project History';
+    loadHistory();
   }, []);
 
+  // Financial rule: only confirmed payments contribute to totalPaidAllTime
   const totalPaidAllTime = clientHistory.reduce((sum, h) => sum + h.totalPaid, 0);
   const avgRating =
     clientHistory.length > 0
@@ -72,11 +107,24 @@ export const ClientHistoryPage: React.FC = () => {
             </p>
           </div>
 
+          {loadError && (
+            <div role="alert" className="p-4 rounded-xl bg-[#FAF3E7] border border-[#E8D2AC] flex items-center justify-between">
+              <span className="text-sm text-[#874E0E]">{loadError}</span>
+              <button
+                type="button"
+                onClick={loadHistory}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#874E0E] text-white hover:bg-[#6D3F0B]"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
           {/* Summary strip */}
-          {clientHistory.length > 0 && (
+          {!isLoading && clientHistory.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div className="bg-paper border border-[#003C5F]/15 rounded-xl p-5">
-                <div className="text-[13px] text-[#455A6A] mb-1">Projects Completed</div>
+                <div className="text-[13px] text-[#455A6A] mb-1">Engagements Completed</div>
                 <div className="font-display text-3xl text-deepBlue">{clientHistory.length}</div>
               </div>
               <div className="bg-paper border border-[#003C5F]/15 rounded-xl p-5">
@@ -94,8 +142,13 @@ export const ClientHistoryPage: React.FC = () => {
             </div>
           )}
 
-          {/* History Table */}
-          {clientHistory.length === 0 ? (
+          {/* History Content */}
+          {isLoading ? (
+            <div className="py-16 text-center space-y-3">
+              <div className="w-8 h-8 border-2 border-[#003C5F] border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-sm text-[#455A6A]">Loading engagement history...</p>
+            </div>
+          ) : clientHistory.length === 0 ? (
             <div className="bg-paper border border-[#003C5F]/15 rounded-xl p-16 text-center space-y-3">
               <svg
                 className="w-10 h-10 text-[#003C5F]/25 mx-auto"
@@ -133,7 +186,7 @@ export const ClientHistoryPage: React.FC = () => {
                         scope="col"
                         className="text-left px-5 py-3.5 text-[13px] font-semibold text-deepBlue"
                       >
-                        Project
+                        Project & Milestone
                       </th>
                       <th
                         scope="col"
@@ -151,7 +204,7 @@ export const ClientHistoryPage: React.FC = () => {
                         scope="col"
                         className="text-right px-4 py-3.5 text-[13px] font-semibold text-deepBlue whitespace-nowrap"
                       >
-                        Total Paid
+                        Settlement
                       </th>
                       <th
                         scope="col"
@@ -180,10 +233,15 @@ export const ClientHistoryPage: React.FC = () => {
                           <td className="px-5 py-4">
                             <Link
                               to={`/client/projects/${item.projectId}`}
-                              className="font-semibold text-deepBlue hover:underline underline-offset-2 text-sm"
+                              className="font-semibold text-deepBlue hover:underline underline-offset-2 text-sm block"
                             >
                               {item.title}
                             </Link>
+                            {item.milestoneTitle && (
+                              <span className="text-xs text-[#455A6A] mt-0.5 block">
+                                Milestone: {item.milestoneTitle}
+                              </span>
+                            )}
                           </td>
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-2.5">
@@ -202,9 +260,25 @@ export const ClientHistoryPage: React.FC = () => {
                             </div>
                           </td>
                           <td className="px-4 py-4 text-right">
-                            <span className="font-display text-base text-deepBlue font-semibold whitespace-nowrap">
-                              ${item.totalPaid.toLocaleString()}
-                            </span>
+                            {item.isPaid ? (
+                              <div>
+                                <span className="font-display text-base text-[#24543A] font-semibold whitespace-nowrap">
+                                  ${item.totalPaid.toLocaleString()}
+                                </span>
+                                <span className="text-[11px] block font-semibold text-[#24543A]">
+                                  Paid (Sandbox)
+                                </span>
+                              </div>
+                            ) : (
+                              <div>
+                                <span className="font-display text-base text-[#874E0E] font-semibold whitespace-nowrap">
+                                  ${(item.milestoneAmount ?? 0).toLocaleString()}
+                                </span>
+                                <span className="text-[11px] block font-semibold text-[#874E0E]">
+                                  Approved &middot; Unpaid
+                                </span>
+                              </div>
+                            )}
                           </td>
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-0.5" aria-label={`Rating: ${item.ratingGiven} out of 5`}>
@@ -221,12 +295,13 @@ export const ClientHistoryPage: React.FC = () => {
                               ))}
                               {stars.half && (
                                 <svg
+                                  key="half"
                                   className="w-4 h-4 text-[#A86315]/50"
                                   fill="currentColor"
                                   viewBox="0 0 20 20"
                                   aria-hidden="true"
                                 >
-                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292z" />
                                 </svg>
                               )}
                               {Array.from({ length: stars.empty }).map((_, i) => (

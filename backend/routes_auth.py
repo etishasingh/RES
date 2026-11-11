@@ -3,6 +3,7 @@ PayPilot AI – /api/auth routes.
 """
 from __future__ import annotations
 
+import os
 import uuid
 from datetime import datetime, timezone
 
@@ -85,13 +86,22 @@ def _user_dict(user: User, db: Session | None = None) -> dict:
     return data
 
 
+def _is_production() -> bool:
+    return (
+        os.environ.get("ENVIRONMENT") == "production"
+        or bool(os.environ.get("RENDER"))
+        or os.environ.get("COOKIE_SECURE", "").lower() in ("true", "1", "yes")
+    )
+
+
 def _set_cookie(response: Response, token: str) -> None:
+    is_prod = _is_production()
     response.set_cookie(
         key=COOKIE_NAME,
         value=token,
         httponly=True,
-        samesite="lax",
-        secure=False,   # set True behind HTTPS in production
+        samesite="none" if is_prod else "lax",
+        secure=True if is_prod else False,
         max_age=86400,  # 24h
         path="/",
     )
@@ -146,7 +156,7 @@ def register(body: RegisterBody, response: Response, db: Session = Depends(get_d
 
     token = create_token(user.id, user.role)
     _set_cookie(response, token)
-    return {"user": _user_dict(user, db), "message": "Account created."}
+    return {"user": _user_dict(user, db), "token": token, "message": "Account created."}
 
 
 @router.post("/login")
@@ -157,7 +167,7 @@ def login(body: LoginBody, response: Response, db: Session = Depends(get_db)):
 
     token = create_token(user.id, user.role)
     _set_cookie(response, token)
-    return {"user": _user_dict(user, db), "message": "Signed in."}
+    return {"user": _user_dict(user, db), "token": token, "message": "Signed in."}
 
 
 @router.get("/me")
@@ -173,5 +183,11 @@ def me(
 
 @router.post("/logout")
 def logout(response: Response):
-    response.delete_cookie(key=COOKIE_NAME, path="/")
+    is_prod = _is_production()
+    response.delete_cookie(
+        key=COOKIE_NAME,
+        path="/",
+        samesite="none" if is_prod else "lax",
+        secure=True if is_prod else False,
+    )
     return {"message": "Signed out."}

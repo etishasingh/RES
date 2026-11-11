@@ -5,16 +5,10 @@ import type {
   ImpactBadge,
   UserContributionsData,
 } from '../types/impact';
+import { apiFetch } from '../lib/api';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`/api/impact${path}`, {
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers || {}),
-    },
-    ...init,
-  });
+  const response = await apiFetch(`/api/impact${path}`, init);
   if (!response.ok) {
     const body = await response.json().catch(() => null);
     throw new Error(body?.detail || `Request failed with status ${response.status}.`);

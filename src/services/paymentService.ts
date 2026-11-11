@@ -1,4 +1,5 @@
 import type { PaymentTransaction } from '../types/client';
+import { apiFetch } from '../lib/api';
 
 export interface PayPalConfig {
   configured: boolean;
@@ -23,14 +24,7 @@ export interface CaptureOrderResponse {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`/api/payments${path}`, {
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers || {}),
-    },
-    ...init,
-  });
+  const response = await apiFetch(`/api/payments${path}`, init);
   if (!response.ok) {
     const body = await response.json().catch(() => null);
     throw new Error(body?.detail || `Payment request failed (${response.status}).`);

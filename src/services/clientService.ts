@@ -7,6 +7,7 @@ import type {
 } from '../types/client';
 import type { Milestone, MilestoneStatus } from '../types/freelancer';
 import { projectService, type ApiProject } from './projectService';
+import { apiFetch } from '../lib/api';
 
 export function mapApiProjectToClientProject(
   p: ApiProject,
@@ -148,10 +149,7 @@ export const clientService = {
     if (query?.availability) params.set('availability', query.availability);
 
     const queryString = params.toString() ? `?${params.toString()}` : '';
-    const response = await fetch(`/api/freelancers${queryString}`, {
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await apiFetch(`/api/freelancers${queryString}`);
     if (!response.ok) {
       const body = await response.json().catch(() => null);
       throw new Error(body?.detail || 'The freelancer directory is unavailable right now.');

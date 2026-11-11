@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PayPilot Auth Bridge</title>
+</head>
+<body style="background:#0a192f;color:#fff;font-family:sans-serif;padding:40px;">
+  <h2>Authenticating PayPilot session...</h2>
+  <div id="status">Connecting to backend...</div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const role = params.get('role') || 'client';
+    const email = role === 'client' ? 'client@demo.paypilot' : 'elena@demo.paypilot';
+    const redirect = params.get('redirect') || (role === 'client' ? '/#/client/dashboard' : '/#/freelancer/dashboard');
+
+    fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: 'Password123!' }),
+      credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('status').innerText = 'Authenticated as ' + data.user.name + '. Redirecting to ' + redirect + '...';
+      setTimeout(() => {
+        window.location.href = redirect;
+      }, 200);
+    })
+    .catch(err => {
+      document.getElementById('status').innerText = 'Error: ' + err.message;
+    });
+  </script>
+</body>
+</html>
+

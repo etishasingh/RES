@@ -49,11 +49,15 @@ export interface ClientHistoryItem {
   id: string;
   projectId: string;
   title: string;
+  milestoneTitle?: string;
   freelancerName: string;
   freelancerAvatar: string;
   startDate: string;
   completedDate: string;
   totalPaid: number;
+  milestoneAmount?: number;
+  isPaid?: boolean;
+  status?: string;
   ratingGiven: number;
   feedbackSummary: string;
 }

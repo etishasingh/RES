@@ -1,3 +1,5 @@
+import { apiFetch } from '../lib/api';
+
 export type ProjectStatus = 'draft' | 'open' | 'invited' | 'assigned' | 'active' | 'in_review' | 'completed' | 'cancelled';
 export type MilestoneStatus = 'not_started' | 'in_progress' | 'submitted' | 'under_review' | 'accepted' | 'paid' | 'rejected' | 'cancelled';
 
@@ -11,8 +13,17 @@ export interface ApiProject {
   budget_min: number | null; budget_max: number | null; hourly_rate: number | null; currency: string;
   pricing_type: 'fixed' | 'hourly' | 'negotiable' | null; status: ProjectStatus; created_at: string; updated_at: string;
   milestones: ApiMilestone[];
+  client_name?: string | null;
+  client_organization?: string | null;
+  freelancer_name?: string | null;
+  freelancer_headline?: string | null;
 }
-export interface ApiInvitation { id: string; project_id: string; client_id: string; freelancer_id: string; status: string; created_at: string; updated_at: string; project: ApiProject | null; }
+export interface ApiInvitation {
+  id: string; project_id: string; client_id: string; freelancer_id: string; status: string; created_at: string; updated_at: string; project: ApiProject | null;
+  client_name?: string | null;
+  client_organization?: string | null;
+  freelancer_name?: string | null;
+}
 export interface ApiProjectRequest {
   id: string;
   project_id: string;
@@ -44,13 +55,26 @@ export interface ApiProjectRequest {
   } | null;
 }
 export interface ApiSubmission { id: string; milestone_id: string; freelancer_id: string; deliverable_url: string | null; deliverable_text: string | null; deliverable_metadata: Record<string, unknown> | null; notes: string | null; evaluation_result: Record<string, unknown> | null; status: string; submitted_at: string; created_at: string; updated_at: string; }
-export interface ApiReview { id: string; project_id: string; milestone_id: string | null; client_id: string; freelancer_id: string; client_score: number | null; model_score: number | null; final_score: number | null; feedback: string | null; evaluation_result: Record<string, unknown> | null; created_at: string; updated_at: string; }
+export interface ApiReview {
+  id: string; project_id: string; milestone_id: string | null; client_id: string; freelancer_id: string;
+  client_score: number | null; model_score: number | null; final_score: number | null; feedback: string | null;
+  evaluation_result: Record<string, unknown> | null; created_at: string; updated_at: string;
+  milestone_title?: string | null;
+  milestone_amount?: number | null;
+  milestone_due_date?: string | null;
+  milestone_status?: string | null;
+  client_name?: string | null;
+  client_organization?: string | null;
+  freelancer_name?: string | null;
+  paid_amount?: number;
+  is_paid?: boolean;
+}
 export interface JourneyResponse { projects: ApiProject[]; reviews: ApiReview[]; }
 
 type CreateProject = Omit<Partial<ApiProject>, 'id' | 'client_id' | 'freelancer_id' | 'created_at' | 'updated_at' | 'milestones'> & { title: string; description: string; milestones: Array<Pick<ApiMilestone, 'title' | 'description' | 'acceptance_criteria' | 'amount' | 'due_date'>> };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`/api/projects${path}`, { credentials: 'include', headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) }, ...init });
+  const response = await apiFetch(`/api/projects${path}`, init);
   if (!response.ok) {
     const body = await response.json().catch(() => null);
     throw new Error(body?.detail || `Request failed (${response.status}).`);

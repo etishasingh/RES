@@ -1,9 +1,10 @@
 /**
- * authService – thin wrapper around /api/auth endpoints.
+ * authService – wrapper around /api/auth endpoints.
  * Used directly by SignInForm and SignUpForm before AuthContext updates.
- * After a successful call the response cookie is set server-side.
+ * Saves auth token for cross-origin Bearer authentication fallback.
  */
 import type { AuthServiceContract, AuthResponse, LoginPayload, RegisterPayload } from '../types/auth';
+import { apiFetch, setAuthToken } from '../lib/api';
 
 export class AuthService implements AuthServiceContract {
   private readonly baseUrl: string;
@@ -17,11 +18,9 @@ export class AuthService implements AuthServiceContract {
       throw new Error('Please complete all required fields.');
     }
 
-    const res = await fetch(`${this.baseUrl}/register`, {
+    const res = await apiFetch(`${this.baseUrl}/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -29,7 +28,11 @@ export class AuthService implements AuthServiceContract {
       throw new Error(data?.detail || `Registration failed (${res.status}).`);
     }
 
-    return res.json();
+    const data = await res.json();
+    if (data.token) {
+      setAuthToken(data.token);
+    }
+    return data;
   }
 
   async login(payload: LoginPayload): Promise<AuthResponse> {
@@ -37,11 +40,9 @@ export class AuthService implements AuthServiceContract {
       throw new Error('Please provide both email and password.');
     }
 
-    const res = await fetch(`${this.baseUrl}/login`, {
+    const res = await apiFetch(`${this.baseUrl}/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -49,7 +50,11 @@ export class AuthService implements AuthServiceContract {
       throw new Error(data?.detail || `Sign in failed (${res.status}).`);
     }
 
-    return res.json();
+    const data = await res.json();
+    if (data.token) {
+      setAuthToken(data.token);
+    }
+    return data;
   }
 }
 
