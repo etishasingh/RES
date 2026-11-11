@@ -1,41 +1,23 @@
 services:
-  # PayPilot AI – Backend Web Service
+  # PayPilot AI – Unified Full-Stack Web Service (FastAPI + React SPA)
   - type: web
-    name: paypilot-backend
+    name: paypilot-ai
     runtime: python
     region: oregon
     plan: free
-    rootDir: backend
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install -r backend/requirements.txt && npm ci && npm run build
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     envVars:
       - key: SESSION_SECRET
         generateValue: true
       - key: ENVIRONMENT
         value: production
-      - key: CORS_ORIGINS
-        value: https://.*\.onrender\.com,http://localhost:3000
+      - key: DEMO_PASSWORD
+        value: Password123!
       - key: PAYPAL_CLIENT_ID
         sync: false
       - key: PAYPAL_CLIENT_SECRET
         sync: false
       - key: PAYPAL_MODE
         value: sandbox
-
-  # PayPilot AI – Frontend Static Site
-  - type: static
-    name: paypilot-frontend
-    runtime: static
-    region: oregon
-    plan: free
-    rootDir: .
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: VITE_API_BASE_URL
-        value: https://paypilotai-xa4x.onrender.com

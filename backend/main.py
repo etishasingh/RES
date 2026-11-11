@@ -17,8 +17,10 @@ if not os.environ.get("SESSION_SECRET"):
     print("WARNING: SESSION_SECRET is not set; falling back to default secret.")
     os.environ["SESSION_SECRET"] = default_secret
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from db import create_tables
 from routes_auth import router as auth_router
@@ -77,15 +79,77 @@ app.include_router(payments_router)
 app.include_router(impact_router)
 app.include_router(spotlight_router)
 
-
-@app.get("/")
-def root():
-    return {"status": "ok", "service": "paypilot-ai", "version": "0.1.0"}
-
-
+# Health endpoint (must precede SPA fallback)
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
+
+
+# Explicit API catchall: ensures any unmatched /api/* request returns 404 JSON for all HTTP methods
+@app.api_route(
+    "/api/{unmatched:path}",
+    methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+    include_in_schema=False,
+)
+async def api_catchall(unmatched: str):
+    raise HTTPException(status_code=404, detail="API endpoint not found")
+
+
+# Locate frontend dist directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIST_DIR = os.environ.get(
+    "FRONTEND_DIST_DIR",
+    os.path.abspath(os.path.join(BASE_DIR, "..", "dist")),
+)
+if not os.path.isdir(FRONTEND_DIST_DIR):
+    alt_dist = os.path.abspath(os.path.join(os.getcwd(), "dist"))
+    if os.path.isdir(alt_dist):
+        FRONTEND_DIST_DIR = alt_dist
+
+assets_dir = os.path.join(FRONTEND_DIST_DIR, "assets")
+if os.path.isdir(assets_dir):
+    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+
+@app.get("/")
+def root():
+    index_file = os.path.join(FRONTEND_DIST_DIR, "index.html")
+    if os.path.isfile(index_file):
+        return FileResponse(index_file)
+    return {"status": "ok", "service": "paypilot-ai", "version": "0.1.0"}
+
+
+@app.get("/{full_path:path}")
+async def serve_frontend(full_path: str):
+    clean_path = full_path.lstrip("/")
+
+    # 1. Never intercept /api, /docs, /redoc, /openapi.json
+    if (
+        clean_path == "api"
+        or clean_path.startswith("api/")
+        or clean_path in ("docs", "redoc", "openapi.json")
+    ):
+        raise HTTPException(status_code=404, detail="Not Found")
+
+    # 2. Never return HTML for missing static assets
+    if clean_path.startswith("assets/"):
+        file_path = os.path.join(FRONTEND_DIST_DIR, clean_path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        raise HTTPException(status_code=404, detail="Asset not found")
+
+    # 3. Serve static files if they exist directly in dist (favicon.ico, auth_bridge.html, etc.)
+    if os.path.isdir(FRONTEND_DIST_DIR):
+        file_path = os.path.join(FRONTEND_DIST_DIR, clean_path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+
+        # 4. Fallback to index.html for client-side React Router routing
+        index_file = os.path.join(FRONTEND_DIST_DIR, "index.html")
+        if os.path.isfile(index_file):
+            return FileResponse(index_file)
+
+    raise HTTPException(status_code=404, detail="Not Found")
 
 
 if __name__ == "__main__":

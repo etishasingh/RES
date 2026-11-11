@@ -8,8 +8,6 @@ const rawBaseUrl = import.meta.env.VITE_API_BASE_URL;
 export const API_BASE_URL =
   rawBaseUrl !== undefined && rawBaseUrl.trim() !== ''
     ? rawBaseUrl.trim().replace(/\/+$/, '')
-    : import.meta.env.PROD
-    ? 'https://paypilotai-xa4x.onrender.com'
     : '';
 
 const TOKEN_KEY = 'paypilot_auth_token';
@@ -76,3 +74,4 @@ export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   }
   return res.json() as Promise<T>;
 }
+
